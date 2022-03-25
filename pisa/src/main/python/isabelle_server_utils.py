@@ -4,6 +4,7 @@ import pathlib
 
 from pisa.find_pisa_path import find_pisa_path
 
+
 class IsabelleServerTmuxConnection:
     def __init__(self, compile_pisa=True):
         self.used_ports = set()
@@ -78,8 +79,8 @@ class IsabelleServerTmuxConnection:
         print(f"Running servers on ports {ports}")
 
     def start_isabelle_server(self, port):
-        print(f'Starting server on port {port}')
-        print(f'Check running = {self.check_is_running(port)}')
+        print(f"Starting server on port {port}")
+        print(f"Check running = {self.check_is_running(port)}")
         if not self.check_is_running(port):
             self.create_local_tmux_session(self.port_to_session(port))
             self.send_command_to_tmux(
@@ -93,11 +94,13 @@ class IsabelleServerTmuxConnection:
                         break
                     sleep(1)
 
-            self.restart_many_servers([port])
+            self.send_command_to_tmux(
+                f'sbt "runMain pisa.server.PisaOneStageServer{port}"',
+                self.port_to_session(port),
+            )
             print(
                 f"Isabelle server in tmux. To access: tmux attach-session -t {self.port_to_session(port)}"
             )
-
 
     def close_isabelle_server(self, port):
         if port not in self.used_ports:
