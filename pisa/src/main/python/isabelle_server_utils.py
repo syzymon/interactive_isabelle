@@ -98,6 +98,12 @@ class IsabelleServerTmuxConnection:
                 f'sbt "runMain pisa.server.PisaOneStageServer{port}"',
                 self.port_to_session(port),
             )
+            for _ in range(self.num_trials):
+                port_running = self.check_is_running(port)
+                if port_running:
+                    break
+                sleep(1)
+
             print(
                 f"Isabelle server in tmux. To access: tmux attach-session -t {self.port_to_session(port)}"
             )
