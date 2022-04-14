@@ -12,6 +12,7 @@ from grpc._channel import _InactiveRpcError
 
 from pisa.src.main.python import server_pb2_grpc, server_pb2
 
+
 class EnvInitFailedException(Exception):
     pass
 
@@ -23,8 +24,10 @@ class ProceedToLineFailedException(Exception):
 class EmptyInitialStateException(Exception):
     pass
 
+
 class StepToTopLevelStateException(Exception):
     pass
+
 
 class IsaFlexEnv:
     def __init__(
@@ -104,7 +107,6 @@ class IsaFlexEnv:
             return obs_string, self.reward(done), done, {}
         except _InactiveRpcError:
             raise StepToTopLevelStateException
-
 
     def get_facts(self, tls_name):
         facts = self.stub.IsabelleCommand(
