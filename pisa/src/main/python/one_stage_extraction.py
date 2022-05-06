@@ -3,7 +3,6 @@ import json
 import grpc
 import argparse
 
-from copy import copy
 from func_timeout import func_set_timeout, FunctionTimedOut
 
 import server_pb2

@@ -4,7 +4,6 @@ import os
 import json
 import grpc
 
-from copy import copy
 from func_timeout import func_set_timeout
 
 import server_pb2
@@ -33,7 +32,8 @@ class IsaFlexEnv:
         return self.obs_string
         
     def is_finished(self, name_of_tls):
-        returned_string = self.stub.IsabelleCommand(server_pb2.IsaCommand(command=f"<is finished> {name_of_tls}")).state.strip()
+        returned_string = self.stub.IsabelleCommand(
+            server_pb2.IsaCommand(command=f"<is finished> {name_of_tls}")).state.strip()
         if returned_string.startswith("t"):
             return True
         else:

@@ -24,7 +24,7 @@ def evaluate_single_problem(isa_path, theory_file_path, working_directory, theor
     stub.IsabelleContext(server_pb2.IsaContext(context=theory_file_path))
 
     theorem_name = stack_lines(theorem_name)
-    state_string = stub.IsabelleCommand(server_pb2.IsaCommand(command="proceed:"+theorem_name)).state
+    state_string = stub.IsabelleCommand(server_pb2.IsaCommand(command="proceed:" + theorem_name)).state
 
     if mode_of_proving not in ["proof", "state", "proof_and_state"]:
         raise AssertionError
