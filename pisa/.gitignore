@@ -1,0 +1,6 @@
+project/plugins.sbt
+target/*
+*.pyc
+.bloop/*
+.metals/*
+.vscode/*
