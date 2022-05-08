@@ -102,15 +102,15 @@ class IsaFlexEnv:
                     command=f"<apply to top level state> {tls_name} <apply to top level state> {action} <apply to top level state> {new_name}"
                 )
             ).state
+            if obs_string == "Step error":
+                raise StepToTopLevelStateException
             done = self.get_proof_level(new_name) == 0
-            if done:
-                print(f"OBS STRING = {obs_string}")
             return obs_string, self.reward(done), done, {}
         except _InactiveRpcError:
             raise StepToTopLevelStateException
 
     def initialize(self):
-        proof_level = self.stub.IsabelleCommand(
+        initialise = self.stub.IsabelleCommand(
             server_pb2.IsaCommand(command=f"<initialise>")
         ).state
 
