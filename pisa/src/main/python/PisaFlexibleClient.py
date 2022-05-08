@@ -85,6 +85,7 @@ class IsaFlexEnv:
                     server_pb2.IsaContext(context=self.starter_string)
                 )
             )
+            self.initialize()
             return self.obs_string
         except _InactiveRpcError:
             raise EnvInitFailedException
@@ -108,17 +109,10 @@ class IsaFlexEnv:
         except _InactiveRpcError:
             raise StepToTopLevelStateException
 
-    def get_facts(self, tls_name):
-        facts = self.stub.IsabelleCommand(
-            server_pb2.IsaCommand(command=f"<get_facts> {tls_name}")
+    def initialize(self):
+        proof_level = self.stub.IsabelleCommand(
+            server_pb2.IsaCommand(command=f"<initialise>")
         ).state
-        return facts
-
-    def get_imports(self):
-        facts = self.stub.IsabelleCommand(
-            server_pb2.IsaCommand(command=f"<get_imports>")
-        ).state
-        return facts
 
     def get_proof_level(self, tls_name):
         proof_level = self.stub.IsabelleCommand(
@@ -126,9 +120,9 @@ class IsaFlexEnv:
         ).state
         return int(proof_level)
 
-    def clone_top_level_state(self, tls_name):
+    def clone_top_level_state(self, tls_name, old_name="default"):
         message = self.stub.IsabelleCommand(
-            server_pb2.IsaCommand(command=f"<clone> {tls_name}")
+            server_pb2.IsaCommand(command=f"<clone> {old_name} <clone> {tls_name}")
         ).state
         print(message)
         print(f"Cloned state called {tls_name}")
