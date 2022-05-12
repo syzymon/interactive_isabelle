@@ -106,7 +106,7 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
   val theoryName: MLFunction2[Boolean, Theory, String] = compileFunction[Boolean, Theory, String](
     "fn (long, thy) => Context.theory_name' {long=long} thy")
   val ancestorsNamesOfTheory: MLFunction[Theory, List[String]] = compileFunction[Theory, List[String]](
-    "fn (thy) => map Context.theory_name (Context.ancestors_of thy)"
+    "fn (thy) => map Context.theory_long_name (Context.ancestors_of thy)"
   )
   val toplevel_string_of_state: MLFunction[ToplevelState, String] = compileFunction[ToplevelState, String](
     "Toplevel.string_of_state")
