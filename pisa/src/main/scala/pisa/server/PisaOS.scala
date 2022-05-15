@@ -105,6 +105,9 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
       |  in addtext (Symbol.explode text) transitions end""".stripMargin)
   val theoryName: MLFunction2[Boolean, Theory, String] = compileFunction[Boolean, Theory, String](
     "fn (long, thy) => Context.theory_name' {long=long} thy")
+  val ancestorsNamesOfTheory: MLFunction[Theory, List[String]] = compileFunction[Theory, List[String]](
+    "fn (thy) => map Context.theory_long_name (Context.ancestors_of thy)"
+  )
   val toplevel_string_of_state: MLFunction[ToplevelState, String] = compileFunction[ToplevelState, String](
     "Toplevel.string_of_state")
   val pretty_local_facts: MLFunction2[ToplevelState, Boolean, List[Pretty.T]] = compileFunction[ToplevelState, Boolean, List[Pretty.T]](
@@ -159,6 +162,8 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
        |      run_sledgehammer p_state |> (fn (x, (_ , y)) => (x,y))
        |    end)
     """.stripMargin)
+
+  def get_theory_ancestors_names(theory: Theory): List[String] = ancestorsNamesOfTheory(theory).force.retrieveNow
 
   def beginTheory(source: Source)(implicit isabelle: Isabelle, ec: ExecutionContext): Theory = {
     val header = getHeader(source)
@@ -261,6 +266,10 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
     toplevel_string_of_state(top_level_state).retrieveNow
 
   def getStateString: String = getStateString(toplevel)
+
+  def is_done(top_level_state: ToplevelState): Boolean = {
+    getProofLevel(top_level_state) == 0
+  }
 
   def getProofLevel(top_level_state: ToplevelState): Int =
     proof_level(top_level_state).retrieveNow
