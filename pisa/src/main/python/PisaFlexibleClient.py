@@ -156,6 +156,10 @@ class IsaFlexEnv:
             )
         ).state
 
+    @func_set_timeout(20)
+    def post(self, action):
+        return self.stub.IsabelleCommand(server_pb2.IsaCommand(command=action)).state
+
 
 def parsed_json_to_env_and_dict(
     path_to_json, afp_path, port, isa_path="/Applications/Isabelle2020.app/Isabelle"
