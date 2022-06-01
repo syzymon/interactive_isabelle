@@ -187,19 +187,35 @@ def parsed_json_to_env_and_dict(
 
 
 @func_set_timeout(300, allowOverride=True)
-def initialise_env(port, isa_path, theory_file_path=None, working_directory=None):
+def initialise_env(port, isa_path, theory_file_path=None, working_directory=None, working_dir_mode="standard"):
     print(f"theory_file_path = {theory_file_path}")
     if working_directory is None:
-        theory_path_split = theory_file_path.split("/")
-        if "thys" in theory_path_split:
-            index = theory_path_split.index("thys")
-            working_directory = "/".join(theory_path_split[: index + 2])
-        elif "HOL" in theory_path_split:
-            index = theory_path_split.index("HOL")
-            if len(theory_path_split) < index + 2:
-                working_directory = "/".join(theory_path_split[: index + 1])
-            else:
+        if working_dir_mode == "standard":
+            theory_path_split = theory_file_path.split("/")
+            if "thys" in theory_path_split:
+                index = theory_path_split.index("thys")
                 working_directory = "/".join(theory_path_split[: index + 2])
+            elif "HOL" in theory_path_split:
+                index = theory_path_split.index("HOL")
+                if len(theory_path_split) < index + 2:
+                    working_directory = "/".join(theory_path_split[: index + 1])
+                else:
+                    working_directory = "/".join(theory_path_split[: index + 2])
+        elif working_dir_mode == "full":
+            theory_path_split = theory_file_path.split("/")
+            working_directory = "/".join(theory_path_split[: -1])
+
+        else:
+            assert ValueError(f"uknkown working_dir_mode = {working_dir_mode}")
+            # if "thys" in theory_path_split:
+            #     index = theory_path_split.index("thys")
+            #     working_directory = "/".join(theory_path_split[: index + 2])
+            # elif "HOL" in theory_path_split:
+            #     index = theory_path_split.index("HOL")
+            #     if len(theory_path_split) < index + 2:
+            #         working_directory = "/".join(theory_path_split[: index + 1])
+            #     else:
+            #         working_directory = "/".join(theory_path_split[: index + 2])
 
         print(f"Automatically detected working directory: {working_directory}")
     return IsaFlexEnv(

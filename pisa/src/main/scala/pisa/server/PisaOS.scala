@@ -142,6 +142,18 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
        |    end)
     """.stripMargin)
 
+  val local_facts_retriever: MLFunction[ToplevelState, List[String]] = compileFunction[ToplevelState, List[String]](
+    "fn tls => map Pretty.unformatted_string_of (Proof_Context.pretty_local_facts false (Toplevel.context_of tls))"
+  )
+  val global_facts_retriever:MLFunction[ToplevelState, List[String]] = compileFunction[ToplevelState, List[String]](
+    """fn tls => map (fn tup => #1 tup) (Global_Theory.all_thms_of (Proof_Context.theory_of (Toplevel.context_of tls)) false)""")
+
+  def total_facts(tls: ToplevelState): List[String] = {
+    val local_facts = local_facts_retriever(tls).force.retrieveNow
+    val global_facts = global_facts_retriever(tls).force.retrieveNow
+    (local_facts ++ global_facts).distinct
+  }
+
   // prove_with_Sledgehammer is mostly identical to check_with_Sledgehammer except for that when the returned Boolean is true, it will 
   // also return a non-empty list of Strings, each of which contains executable commands to close the top subgoal. We might need to chop part of 
   // the string to get the actual tactic. For example, one of the string may look like "Try this: by blast (0.5 ms)".
