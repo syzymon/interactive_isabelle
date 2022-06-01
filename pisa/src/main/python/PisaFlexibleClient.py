@@ -149,6 +149,13 @@ class IsaFlexEnv:
                 list_of_useful_steps.append(step)
         return list_of_useful_steps
 
+    def total_facts(self, tls_name):
+        return self.stub.IsabelleCommand(
+            server_pb2.IsaCommand(
+                command=f"<total_facts> {tls_name}"
+            )
+        ).state
+
     def find_thm(self, tls_name, thm_name):
         return self.stub.IsabelleCommand(
             server_pb2.IsaCommand(

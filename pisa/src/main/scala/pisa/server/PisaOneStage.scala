@@ -193,8 +193,8 @@ class OneStageBody extends ZServer[ZEnv, Any] {
         val tls_name: String = isa_command.command.stripPrefix("<get_proof_level>").trim
         deal_with_proof_level(tls_name)
       }
-      else if (isa_command.command.startsWith("<get_total_facts>")) {
-        val tls_name: String = isa_command.command.stripPrefix("<get_proof_level>").trim
+      else if (isa_command.command.startsWith("<total_facts>")) {
+        val tls_name: String = isa_command.command.stripPrefix("<total_facts>").trim
         deal_with_total_facts(tls_name)
       }
       else if (isa_command.command.startsWith("<proceed before>")) {

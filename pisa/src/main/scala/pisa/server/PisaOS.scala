@@ -148,11 +148,23 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
   val global_facts_retriever:MLFunction[ToplevelState, List[String]] = compileFunction[ToplevelState, List[String]](
     """fn tls => map (fn tup => #1 tup) (Global_Theory.all_thms_of (Proof_Context.theory_of (Toplevel.context_of tls)) false)""")
 
-  def total_facts(tls: ToplevelState): List[String] = {
+//  def total_facts(tls: ToplevelState): String = {
+//    val local_facts = local_facts_retriever(tls).force.retrieveNow
+//    val global_facts = global_facts_retriever(tls).force.retrieveNow
+//    val all_facts = (local_facts ++ global_facts).distinct
+//    var facts: String = ""
+//    for (fact <- all_facts) {
+//      facts = facts + fact + "<\\FACT_SEP>"
+//    }
+//    facts
+//    }
+
+  def total_facts(tls: ToplevelState): String = {
     val local_facts = local_facts_retriever(tls).force.retrieveNow
     val global_facts = global_facts_retriever(tls).force.retrieveNow
-    (local_facts ++ global_facts).distinct
+    (local_facts ++ global_facts).distinct.mkString("<SEPARATOR>")
   }
+
 
   // prove_with_Sledgehammer is mostly identical to check_with_Sledgehammer except for that when the returned Boolean is true, it will 
   // also return a non-empty list of Strings, each of which contains executable commands to close the top subgoal. We might need to chop part of 
