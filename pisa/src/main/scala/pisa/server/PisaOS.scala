@@ -148,23 +148,58 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
   val global_facts_retriever:MLFunction[ToplevelState, List[String]] = compileFunction[ToplevelState, List[String]](
     """fn tls => map (fn tup => #1 tup) (Global_Theory.all_thms_of (Proof_Context.theory_of (Toplevel.context_of tls)) false)""")
 
-//  def total_facts(tls: ToplevelState): String = {
-//    val local_facts = local_facts_retriever(tls).force.retrieveNow
-//    val global_facts = global_facts_retriever(tls).force.retrieveNow
-//    val all_facts = (local_facts ++ global_facts).distinct
-//    var facts: String = ""
-//    for (fact <- all_facts) {
-//      facts = facts + fact + "<\\FACT_SEP>"
-//    }
-//    facts
-//    }
-
+  val local_facts_and_defs: MLFunction[ToplevelState, List[(String, String)]] =
+    compileFunction[ToplevelState, List[(String, String)]](
+      """fn tls =>
+        |  let val ctxt = Toplevel.context_of tls;
+        |      val facts = Proof_Context.facts_of ctxt;
+        |      val props = map #1 (Facts.props facts);
+        |      val local_facts =
+        |        (if null props then [] else [("<unnamed>", props)]) @
+        |        Facts.dest_static false [Global_Theory.facts_of (Proof_Context.theory_of ctxt)] facts;
+        |      val test = map #2 local_facts;
+        |      val collapsed_local_facts = fold (fn x => fn y => (x @ y)) test [];
+        |  in
+        |    if null collapsed_local_facts then []
+        |    else (
+        |      map
+        |      (
+        |        fn tup => (
+        |          Thm.derivation_name tup,
+        |          Pretty.unformatted_string_of
+        |          (Element.pretty_statement (Toplevel.context_of tls) "test" tup)
+        |        )
+        |      )
+        |      collapsed_local_facts
+        |    )
+        |  end""".stripMargin
+    )
+  val global_facts_and_defs: MLFunction[ToplevelState, List[(String, String)]] =
+    compileFunction[ToplevelState, List[(String, String)]](
+      """fn tls =>
+        | map (fn tup => (#1 tup, Pretty.unformatted_string_of (Element.pretty_statement (Toplevel.context_of tls) "test" (#2 tup))))
+        | (Global_Theory.all_thms_of (Proof_Context.theory_of (Toplevel.context_of tls)) false)
+        """.stripMargin
+    )
   def total_facts(tls: ToplevelState): String = {
-    val local_facts = local_facts_retriever(tls).force.retrieveNow
-    val global_facts = global_facts_retriever(tls).force.retrieveNow
-    (local_facts ++ global_facts).distinct.mkString("<SEPARATOR>")
+    val local_facts = local_facts_and_defs(tls).force.retrieveNow
+    val global_facts = global_facts_and_defs(tls).force.retrieveNow
+//    (local_facts ++ global_facts).distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
+    var elo: String = "elo"
+    elo
   }
 
+  def all_local_facts(tls: ToplevelState): String = {
+    val local_facts = local_facts_and_defs(tls).force.retrieveNow
+    val global_facts = global_facts_and_defs(tls).force.retrieveNow
+    (local_facts ++ global_facts).distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
+  }
+
+  def all_global_facts(tls: ToplevelState): String = {
+    val local_facts = local_facts_and_defs(tls).force.retrieveNow
+    val global_facts = global_facts_and_defs(tls).force.retrieveNow
+    (local_facts ++ global_facts).distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
+  }
 
   // prove_with_Sledgehammer is mostly identical to check_with_Sledgehammer except for that when the returned Boolean is true, it will 
   // also return a non-empty list of Strings, each of which contains executable commands to close the top subgoal. We might need to chop part of 

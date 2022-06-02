@@ -47,7 +47,11 @@ class IsaFlexEnv:
         self.reset()
 
     def create_stub(self, port):
-        self.channel = grpc.insecure_channel("localhost:{}".format(port))
+        MAX_MESSAGE_LENGTH = 104857600
+        self.channel = grpc.insecure_channel('localhost:{}'.format(port),
+                                        options=[('grpc.max_send_message_length', MAX_MESSAGE_LENGTH),
+                                                 ('grpc.max_receive_message_length', MAX_MESSAGE_LENGTH)])
+        # self.channel = grpc.insecure_channel("localhost:{}".format(port))
         self.stub = server_pb2_grpc.ServerStub(self.channel)
 
     def observation(self):
