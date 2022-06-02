@@ -137,8 +137,11 @@ class OneStageBody extends ZServer[ZEnv, Any] {
   def deal_with_proceed_after(true_command: String): String = pisaos.step_to_transition_text(true_command, after = true)
 
   def deal_with_total_facts(toplevel_state_name: String): String = {
+    println(toplevel_state_name)
     if (pisaos.top_level_state_map.contains(toplevel_state_name)) {
       val tls: ToplevelState = pisaos.retrieve_tls(toplevel_state_name)
+      println(tls)
+      println(pisaos.top_level_state_map)
       s"${pisaos.total_facts(tls)}"
     } else s"Didn't find top level state of given name: ${toplevel_state_name}"
   }

@@ -47,7 +47,7 @@ class IsaFlexEnv:
         self.reset()
 
     def create_stub(self, port):
-        MAX_MESSAGE_LENGTH = 104857600
+        MAX_MESSAGE_LENGTH = 1048576000
         self.channel = grpc.insecure_channel('localhost:{}'.format(port),
                                         options=[('grpc.max_send_message_length', MAX_MESSAGE_LENGTH),
                                                  ('grpc.max_receive_message_length', MAX_MESSAGE_LENGTH)])
