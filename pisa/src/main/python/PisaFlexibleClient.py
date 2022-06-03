@@ -153,10 +153,17 @@ class IsaFlexEnv:
                 list_of_useful_steps.append(step)
         return list_of_useful_steps
 
-    def total_facts(self, tls_name):
+    def local_facts(self, tls_name="root"):
         return self.stub.IsabelleCommand(
             server_pb2.IsaCommand(
-                command=f"<total_facts> {tls_name}"
+                command=f"<local_facts> {tls_name}"
+            )
+        ).state
+
+    def global_facts(self, tls_name="root"):
+        return self.stub.IsabelleCommand(
+            server_pb2.IsaCommand(
+                command=f"<global_facts> {tls_name}"
             )
         ).state
 
@@ -218,15 +225,6 @@ def initialise_env(port, isa_path, theory_file_path=None, working_directory=None
 
         else:
             assert ValueError(f"uknkown working_dir_mode = {working_dir_mode}")
-            # if "thys" in theory_path_split:
-            #     index = theory_path_split.index("thys")
-            #     working_directory = "/".join(theory_path_split[: index + 2])
-            # elif "HOL" in theory_path_split:
-            #     index = theory_path_split.index("HOL")
-            #     if len(theory_path_split) < index + 2:
-            #         working_directory = "/".join(theory_path_split[: index + 1])
-            #     else:
-            #         working_directory = "/".join(theory_path_split[: index + 2])
 
         print(f"Automatically detected working directory: {working_directory}")
     return IsaFlexEnv(

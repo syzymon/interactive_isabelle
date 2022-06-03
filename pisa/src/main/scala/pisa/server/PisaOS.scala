@@ -225,16 +225,15 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
   }
 
   def all_local_facts(tls: ToplevelState): String = {
+    println("toplevel:")
+    print(getStateString)
     val local_facts = local_facts_and_defs(tls).force.retrieveNow
-    val global_facts = global_facts_and_defs(tls).force.retrieveNow
-    (local_facts ++ global_facts).distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
+    local_facts.distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
   }
 
   def all_global_facts(tls: ToplevelState): String = {
-
-    val local_facts = local_facts_and_defs(tls).force.retrieveNow
     val global_facts = global_facts_and_defs(tls).force.retrieveNow
-    (local_facts ++ global_facts).distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
+    global_facts.distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
   }
 
   // prove_with_Sledgehammer is mostly identical to check_with_Sledgehammer except for that when the returned Boolean is true, it will 
