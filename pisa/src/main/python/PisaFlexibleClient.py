@@ -144,7 +144,7 @@ class IsaFlexEnv:
 
     def extract_theory_steps(self):
         all_steps_str = self.stub.IsabelleCommand(
-            server_pb2.IsaCommand(command="PISA extract actions")
+            server_pb2.IsaCommand(command="<extract_steps>")
         ).state
         list_of_steps = all_steps_str.split("<\\ISA_STEP>")
         list_of_useful_steps = []

@@ -1,41 +1,29 @@
 [0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = /home/tomek/Research/interactive_isabelle/pisa/target/scala-2.13/classes.bak[0m
 [0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Transition$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofState.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofContext.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Transition.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	PisaOS$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Pretty$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	RuntimeError.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofContext$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofState$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	PisaOS.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	RuntimeError$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Pretty.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaExtraction.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaOneStage$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaExtraction$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaExtraction$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaOneStage.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	OneStageBody.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaMini$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaMini.class[0m
 [0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Transition$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofState.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofContext.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Transition.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	PisaOS$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Pretty$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	RuntimeError.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofContext$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofState$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	PisaOS.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	RuntimeError$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Pretty.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaExtraction.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaOneStage$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaExtraction$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaExtraction$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaOneStage.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	OneStageBody.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaMini$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaMini.class[0m
 [0m[[0m[0mdebug[0m] [0m[0mRegistering generated classes:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Transition$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofState.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofContext.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Transition.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	PisaOS$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Pretty$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	RuntimeError.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofContext$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	ProofState$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	PisaOS.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	RuntimeError$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	Pretty.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaExtraction.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaOneStage$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaExtraction$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaExtraction$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaOneStage.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	OneStageBody.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaMini$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PisaMini.class[0m
 [0m[[0m[0mdebug[0m] [0m[0mRemoving the temporary directory used for backing up class files: /home/tomek/Research/interactive_isabelle/pisa/target/scala-2.13/classes.bak[0m

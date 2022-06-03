@@ -423,6 +423,23 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
     stateActionTotal
   }
 
+    def parseActionRaw(isarString : String) : String = {
+    // Here we directly apply transitions to the theory repeatedly
+    // to get the (last_observation, action, observation, reward, done) tuple
+    var actionTotal : String = ""
+    val continue = new Breaks
+    // Initialising the state string
+    var proof_level_number = getProofLevel
+    Breaks.breakable {
+      for ((transition, text) <- parse_text(thy1, isarString).force.retrieveNow)
+        continue.breakable {
+          if (text.trim.isEmpty) continue.break
+          actionTotal = actionTotal + ("<\\ISA_STEP>" + text.trim)
+        }
+    }
+    actionTotal
+  }
+
   def parseStateActionWithHammer(isarString: String): String = {
     var stateActionHammerTotal: String = ""
     val continue = new Breaks
@@ -480,7 +497,10 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
 
   def parse: String = parseStateAction(fileContent)
 
+  def parse_raw: String = parseActionRaw(fileContent)
+
   def parse_with_hammer: String = parseStateActionWithHammer(fileContent)
+
 
   def step(isar_string: String, top_level_state: ToplevelState, timeout_in_millis: Int = 2000): ToplevelState = {
     // Normal isabelle business
@@ -505,6 +525,9 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
     // Specific method for extracting data
     if (isar_string == "PISA extract data")
       return parse
+
+    if (isar_string == "PISA extract actions")
+      return parse_raw
 
     // Specific method for extracting data with hammer
     if (isar_string == "PISA extract data with hammer")

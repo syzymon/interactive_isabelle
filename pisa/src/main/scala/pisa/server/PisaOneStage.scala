@@ -62,6 +62,7 @@ class OneStageBody extends ZServer[ZEnv, Any] {
 
   def deal_with_extraction(): String = pisaos.step("PISA extract data")
 
+
   def deal_with_extraction_with_hammer(): String = pisaos.step("PISA extract data with hammer")
 
   def deal_with_list_states(): String = pisaos.top_level_state_map.keys.mkString(" | ")
@@ -152,6 +153,10 @@ class OneStageBody extends ZServer[ZEnv, Any] {
     "Exited"
   }
 
+    def deal_with_raw_extraction(command: String): String = {
+    pisaos.step("PISA extract actions")
+  }
+
   def deal_with_clone(old_name: String, new_name: String): String = {
     pisaos.clone_tls(old_name, new_name)
     "Successfully copied top level state named: " + new_name
@@ -199,6 +204,9 @@ class OneStageBody extends ZServer[ZEnv, Any] {
       else if (isa_command.command.startsWith("<total_facts>")) {
         val tls_name: String = isa_command.command.stripPrefix("<total_facts>").trim
         deal_with_total_facts(tls_name)
+      }
+       else if (isa_command.command.startsWith("<extract_steps>")) {
+        deal_with_raw_extraction("root")
       }
       else if (isa_command.command.startsWith("<proceed before>")) {
         val true_command: String = isa_command.command.stripPrefix("<proceed before>").trim
