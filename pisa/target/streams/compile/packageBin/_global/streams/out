@@ -208,6 +208,8 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/tomek/Research/interactive_isabelle/pisa/target/scala-2.13/classes/pisa/server/PisaOneStageServer14000$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	pisa/server/IsaSearchWidth$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/tomek/Research/interactive_isabelle/pisa/target/scala-2.13/classes/pisa/server/IsaSearchWidth$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	pisa/server/HammFacts$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/tomek/Research/interactive_isabelle/pisa/target/scala-2.13/classes/pisa/server/HammFacts$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	pisa/server/PisaExtraction.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/tomek/Research/interactive_isabelle/pisa/target/scala-2.13/classes/pisa/server/PisaExtraction.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	pisa/server/IsaMessage$.class[0m
@@ -300,6 +302,8 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/tomek/Research/interactive_isabelle/pisa/target/scala-2.13/classes/pisa/server/IsaCommand$IsaCommandLens.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	pisa/server/PisaOneStageServer11000$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/tomek/Research/interactive_isabelle/pisa/target/scala-2.13/classes/pisa/server/PisaOneStageServer11000$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	pisa/server/HammFacts.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/tomek/Research/interactive_isabelle/pisa/target/scala-2.13/classes/pisa/server/HammFacts.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	pisa/server/ProofState$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/tomek/Research/interactive_isabelle/pisa/target/scala-2.13/classes/pisa/server/ProofState$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	pisa/server/ZioServer$ZServer$.class[0m

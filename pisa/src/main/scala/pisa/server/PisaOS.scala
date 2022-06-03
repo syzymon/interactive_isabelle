@@ -196,23 +196,32 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
         """.stripMargin
     )
   def total_facts(tls: ToplevelState): String = {
-    try {
-       val local_facts = local_facts_retriever(tls).force.retrieveNow
-//      val local_facts = local_facts_and_defs(tls).force.retrieveNow
-//        val global_facts = global_facts_and_defs(tls).force.retrieveNow
-    }
+//    try {
+//       val local_facts = local_facts_retriever(tls).force.retrieveNow
+////      val local_facts = local_facts_and_defs(tls).force.retrieveNow
+////        val global_facts = global_facts_and_defs(tls).force.retrieveNow
+//    }
+//
+//    catch {
+//      case ex : Exception => {
+//        println ("\n" + ex)
+//        println ("\n" + ex.getStackTrace + "\n")
+//      }
+//    }
 
-    catch {
-      case ex : Exception => {
-        println ("\n" + ex)
-        println ("\n" + ex.getStackTrace + "\n")
-      }
-    }
 
-//    val global_facts = global_facts_and_defs(tls).force.retrieveNow
-//    (local_facts ++ global_facts).distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
-    var elo: String = "elo"
-    elo
+    val local_facts = local_facts_and_defs(toplevel).force.retrieveNow
+    val global_facts = global_facts_and_defs(toplevel).force.retrieveNow
+
+
+//    catch {
+//      case ex: Exception => {
+//        println("\n" + ex)
+//        println("\n" + ex.getStackTrace + "\n")
+//      }
+//    }
+
+    (local_facts ++ global_facts).distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
   }
 
   def all_local_facts(tls: ToplevelState): String = {

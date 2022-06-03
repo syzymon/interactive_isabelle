@@ -140,8 +140,8 @@ class OneStageBody extends ZServer[ZEnv, Any] {
     println(toplevel_state_name)
     if (pisaos.top_level_state_map.contains(toplevel_state_name)) {
       val tls: ToplevelState = pisaos.retrieve_tls(toplevel_state_name)
-      println(tls)
-      println(pisaos.top_level_state_map)
+//      println(tls)
+//      println(pisaos.top_level_state_map)
       s"${pisaos.total_facts(tls)}"
     } else s"Didn't find top level state of given name: ${toplevel_state_name}"
   }
