@@ -143,58 +143,58 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
     """.stripMargin)
 
 
-
-  val local_facts_retriever: MLFunction[ToplevelState, List[String]] = compileFunction[ToplevelState, List[String]](
-    "fn tls => map Pretty.unformatted_string_of (Proof_Context.pretty_local_facts false (Toplevel.context_of tls))"
-  )
-  val global_facts_retriever:MLFunction[ToplevelState, List[String]] = compileFunction[ToplevelState, List[String]](
-    """fn tls => map (fn tup => #1 tup) (Global_Theory.all_thms_of (Proof_Context.theory_of (Toplevel.context_of tls)) false)""")
-
   val local_facts_and_defs: MLFunction[ToplevelState, List[(String, String)]] =
     compileFunction[ToplevelState, List[(String, String)]](
       """fn tls =>
-        |  let
-        |    val ctxt = Toplevel.context_of tls;
-        |  in []
-        |  end
-        |  """.stripMargin
+        |  let val ctxt = Toplevel.context_of tls;
+        |      val facts = Proof_Context.facts_of ctxt;
+        |      val props = map #1 (Facts.props facts);
+        |      val local_facts =
+        |        (if null props then [] else [("unnamed", props)]) @
+        |        Facts.dest_static true [Global_Theory.facts_of (Proof_Context.theory_of ctxt)] facts;
+        |      val thms = (
+        |           if null local_facts then []
+        |           else
+        |           (map (fn e => #2 (#2 e)) (sort_by (#1 o #2) (map (`(Proof_Context.pretty_fact ctxt)) local_facts))));
+        |      val condensed_thms = fold (fn x => fn y => (x @ y)) thms [];
+        |  in
+        |      map (fn thm => (
+        |            Thm.get_name_hint thm,
+        |            Pretty.unformatted_string_of
+        |          (Element.pretty_statement ctx`t "" thm)
+        |         ))
+        |         condensed_thms
+        |  end""".stripMargin
     )
-
-//  val local_facts_and_defs: MLFunction[ToplevelState, List[(String, String)]] =
-//    compileFunction[ToplevelState, List[(String, String)]](
-//      s"""fn tls =>
-//        |  let val ctxt = Toplevel.context_of tls;
-//        |      val facts = Proof_Context.facts_of ctxt;
-//        |      val props = map #1 (Facts.props facts);
-//        |      val local_facts =
-//        |        (if null props then [] else [("<unnamed>", props)]) @
-//        |        Facts.dest_static false [Global_Theory.facts_of (Proof_Context.theory_of ctxt)] facts;
-//        |      val test = map #2 local_facts;
-//        |      val collapsed_local_facts = fold (fn x => fn y => (x @ y)) test [];
-//        |  in
-//        |    if null collapsed_local_facts then []
-//        |    else (
-//        |      map
-//        |      (
-//        |        fn tup => (
-//        |          Thm.derivation_name tup,
-//        |          Pretty.unformatted_string_of
-//        |          (Element.pretty_statement (Toplevel.context_of tls) "test" tup)
-//        |        )
-//        |      )
-//        |      collapsed_local_facts
-//        |    )
-//        |  end""".stripMargin
-//    )
-
-
   val global_facts_and_defs: MLFunction[ToplevelState, List[(String, String)]] =
     compileFunction[ToplevelState, List[(String, String)]](
-      s"""fn tls =>
+      """fn tls =>
         | map (fn tup => (#1 tup, Pretty.unformatted_string_of (Element.pretty_statement (Toplevel.context_of tls) "test" (#2 tup))))
         | (Global_Theory.all_thms_of (Proof_Context.theory_of (Toplevel.context_of tls)) false)
         """.stripMargin
     )
+  def local_facts_and_defs_string(tls: ToplevelState): String =
+    local_facts_and_defs(tls).force.retrieveNow.distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
+  def local_facts_and_defs_string(tls_name: String): String = {
+    val tls = retrieve_tls(tls_name)
+    try {
+      local_facts_and_defs_string(tls)
+    } catch {
+      case e: Throwable => e.toString
+    }
+  }
+  def global_facts_and_defs_string(tls: ToplevelState): String =
+    global_facts_and_defs(tls).force.retrieveNow.distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
+  def global_facts_and_defs_string(tls_name: String): String = {
+    val tls = retrieve_tls(tls_name)
+    try {
+      global_facts_and_defs_string(tls)
+    } catch {
+      case e: Throwable => e.toString
+    }
+  }
+
+
   def total_facts(tls: ToplevelState): String = {
 //    try {
 //       val local_facts = local_facts_retriever(tls).force.retrieveNow
@@ -210,8 +210,8 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
 //    }
 
 
-    val local_facts = local_facts_and_defs(toplevel).force.retrieveNow
-    val global_facts = global_facts_and_defs(toplevel).force.retrieveNow
+//    val local_facts = local_facts_and_defs(toplevel).force.retrieveNow
+//    val global_facts = global_facts_and_defs(toplevel).force.retrieveNow
 
 
 //    catch {
