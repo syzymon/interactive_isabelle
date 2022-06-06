@@ -143,7 +143,7 @@ class OneStageBody extends ZServer[ZEnv, Any] {
       val tls: ToplevelState = pisaos.retrieve_tls(toplevel_state_name)
 //      println(tls)
 //      println(pisaos.top_level_state_map)
-      s"${pisaos.all_local_facts(tls)}"
+      s"${pisaos.local_facts_and_defs_string(tls)}"
     } else s"Didn't find top level state of given name: ${toplevel_state_name}"
   }
 
@@ -152,7 +152,7 @@ class OneStageBody extends ZServer[ZEnv, Any] {
       val tls: ToplevelState = pisaos.retrieve_tls(toplevel_state_name)
 //      println(tls)
 //      println(pisaos.top_level_state_map)
-      s"${pisaos.all_global_facts(tls)}"
+      s"${pisaos.global_facts_and_defs_string(tls)}"
     } else s"Didn't find top level state of given name: ${toplevel_state_name}"
   }
 
