@@ -162,7 +162,7 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
 
 //  val local_facts_and_defs: MLFunction[ToplevelState, List[(String, String)]] =
 //    compileFunction[ToplevelState, List[(String, String)]](
-//      """fn tls =>
+//      s"""fn tls =>
 //        |  let val ctxt = Toplevel.context_of tls;
 //        |      val facts = Proof_Context.facts_of ctxt;
 //        |      val props = map #1 (Facts.props facts);
