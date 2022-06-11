@@ -164,7 +164,10 @@ class IsaFlexEnv:
 
 ############################ THIS IS NEW, ADAPTED FROM ALBERT ##################################
     def local_facts(self, tls_name="default"):
-        return self.post(f"<local facts and defs> {tls_name}")
+        try:
+            return self.post(f"<local facts and defs> {tls_name}")
+        except:
+            return "failed"
         # return self.stub.IsabelleCommand(
         #     server_pb2.IsaCommand(
         #         command=f"<local_facts> {tls_name}"
