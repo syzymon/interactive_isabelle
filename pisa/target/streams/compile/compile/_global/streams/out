@@ -1,2 +1,4 @@
-[0m[[0m[33mwarn[0m] [0m[0m5 deprecations (since 2.13.3); re-run with -deprecation for details[0m
-[0m[[0m[33mwarn[0m] [0m[0mone warning found[0m
+[0m[[0m[31merror[0m] [0m[0m/home/tomek/Research/interactive_isabelle/pisa/src/main/scala/pisa/server/PisaOneStage.scala:265:1: not found: value sadads[0m
+[0m[[0m[31merror[0m] [0m[0msadads[0m
+[0m[[0m[31merror[0m] [0m[0m^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m
