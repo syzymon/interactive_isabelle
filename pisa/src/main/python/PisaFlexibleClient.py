@@ -5,7 +5,9 @@ import json
 import grpc
 import sys
 
-# sys.path.append('/home/tomek/Research/interactive_isabelle/pisa/src/main/python')
+sys.path.append('/home/tomek/interactive_isabelle/pisa/src/main/python')
+
+
 
 from copy import copy
 from func_timeout import func_set_timeout
