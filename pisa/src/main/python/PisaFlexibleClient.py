@@ -5,13 +5,17 @@ import json
 import grpc
 import sys
 
-sys.path.append('/home/tomek/Research/interactive_isabelle/pisa/src/main/python')
+# sys.path.append('/home/tomek/Research/interactive_isabelle/pisa/src/main/python')
 
 from copy import copy
 from func_timeout import func_set_timeout
 
-import server_pb2
-import server_pb2_grpc
+from pisa.src.main.python import server_pb2, server_pb2_grpc
+
+# import server_pb2
+# import server_pb2_grpc
+
+
 
 MAX_MESSAGE_LENGTH = 10485760
 
