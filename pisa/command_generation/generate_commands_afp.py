@@ -2,13 +2,23 @@ ports = str(input("Enter the ports, separated by commas:\n")).strip()
 ports = ports.split(",")
 ports = [int(port.strip()) for port in ports]
 ports = [port for port in ports if port]
+use_hammers = str(input("Use hammers (T/F):\n")).strip()
+if use_hammers == "T" or use_hammers == "t":
+    use_hammers = True
+elif use_hammers == "F" or use_hammers == "f":
+    use_hammers = False
+else:
+    raise AssertionError
 
 import glob
 import os
 
-home_directory = "/home/tomek/Research/atp_data"
+home_directory = "/home/qj213"
 
-script = f"python3 src/main/python/one_stage_extraction.py  --isa-path {home_directory}/Isabelle2021 -wd {home_directory}" + "/afp-2021-10-22/thys/{} --saving-directory afp_extractions/{} -tfp {}"
+script = f"unset http_proxy; unset https_proxy; python3 src/main/python/one_stage_extraction.py  --isa-path {home_directory}/Isabelle2021 -wd {home_directory}" + "/afp-2021-10-22/thys/{} --saving-directory afp_extractions/{} -tfp {}"
+if use_hammers:
+    script = script + " -us"
+
 n_threads = 1
 
 cmds = []
@@ -18,9 +28,8 @@ IGNORED_ENTRIES = {}
 
 total_files = 0
 for project_name in glob.glob("{}/afp-2021-10-22/thys/**/*.thy".format(home_directory), recursive=True):
-    project_single_name = project_name.split("/")[3]
+    project_single_name = project_name.split("/")[5]
     file_single_name = project_name.split("/")[-1]
-    print(f'project_single_name = {project_single_name} > file_single_name = {file_single_name}')
 
     # Ignore already extracted files
     if os.path.isfile("afp_extractions/{}/{}_ground_truth.json".format(
@@ -43,30 +52,46 @@ for i, cmd in enumerate(cmds):
     port = indices_to_ports[i%how_many_ports]
     cmds_for_port[port].append(cmd + " -p {} ".format(port))
 
-for port, port_cmds in cmds_for_port.items():
-    with open("afp_extract_script_{}.sh".format(port), "w") as f:
-        f.write('sbt "runMain pisa.server.PisaOneStageServer{}"&\n'.format(port))
-        f.write("PIDmain=$!\n")
-        f.write("sleep 12\n")
-        wait_cmds = []
-        for i, cmd in enumerate(port_cmds):
-            if (i + 1) % n_threads == 0:
-                f.write(cmd + "&\n")
-                f.write("PID{}=$!\n".format(i % n_threads))
-                wait_cmds.append("wait $PID{}\n".format(i % n_threads))
-                for wait in wait_cmds:
-                    f.write(wait)
-                wait_cmds = []
-                # f.write("ps aux | grep scala | awk '{print $2}' | xargs kill\n")
-                # f.write("ps aux | grep java | awk '{print $2}' | xargs kill\n")
-                # f.write("ps aux | grep poly | awk '{print $2}' | xargs kill\n")
-                f.write("kill $PIDmain\n")
-                if (i+1) % 20 == 0:
-                    f.write("rm -rf target/bg-jobs/* \n")
-                f.write('sbt "runMain pisa.server.PisaOneStageServer{}" &\n'.format(port))
-                f.write("PIDmain=$!\n")
-                f.write("sleep 12\n")
-            else:
-                f.write(cmd + "&\n")
-                f.write("PID{}=$!\n".format(i % n_threads))
-                wait_cmds.append("wait $PID{}\n".format(i % n_threads))
+counter = 0
+for j, port in enumerate(ports):
+    port_cmds = cmds_for_port[port]
+    for i, cmd in enumerate(port_cmds):
+        with open(f"scripts/extract_with_hammer_bashes/script_{counter}.sh", "w") as f:
+            f.write('unset http_proxy; unset https_proxy; sbt "runMain pisa.server.PisaOneStageServer{}"&\n'.format(port))
+            f.write("PIDmain=$!\n")
+            f.write("sleep 12\n")
+            f.write(cmd + "&\n")
+            f.write("PID=$!\n")
+            f.write("wait $PID\n")
+            f.write("rm -rf target/bg-jobs/* \n")
+            f.write("kill $PIDmain\n")
+        counter += 1
+
+
+    #
+    # with open("afp_extract_script_{}.sh".format(port), "w") as f:
+    #     f.write('sbt "runMain pisa.server.PisaOneStageServer{}"&\n'.format(port))
+    #     f.write("PIDmain=$!\n")
+    #     f.write("sleep 12\n")
+    #     wait_cmds = []
+    #     for i, cmd in enumerate(port_cmds):
+    #         if (i + 1) % n_threads == 0:
+    #             f.write(cmd + "&\n")
+    #             f.write("PID{}=$!\n".format(i % n_threads))
+    #             wait_cmds.append("wait $PID{}\n".format(i % n_threads))
+    #             for wait in wait_cmds:
+    #                 f.write(wait)
+    #             wait_cmds = []
+    #             # f.write("ps aux | grep scala | awk '{print $2}' | xargs kill\n")
+    #             # f.write("ps aux | grep java | awk '{print $2}' | xargs kill\n")
+    #             # f.write("ps aux | grep poly | awk '{print $2}' | xargs kill\n")
+    #             f.write("kill $PIDmain\n")
+    #             if (i+1) % 20 == 0:
+    #                 f.write("rm -rf target/bg-jobs/* \n")
+    #             f.write('sbt "runMain pisa.server.PisaOneStageServer{}" &\n'.format(port))
+    #             f.write("PIDmain=$!\n")
+    #             f.write("sleep 12\n")
+    #         else:
+    #             f.write(cmd + "&\n")
+    #             f.write("PID{}=$!\n".format(i % n_threads))
+    #             wait_cmds.append("wait $PID{}\n".format(i % n_threads))

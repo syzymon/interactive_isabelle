@@ -106,7 +106,7 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
   val theoryName: MLFunction2[Boolean, Theory, String] = compileFunction[Boolean, Theory, String](
     "fn (long, thy) => Context.theory_name' {long=long} thy")
   val ancestorsNamesOfTheory: MLFunction[Theory, List[String]] = compileFunction[Theory, List[String]](
-    "fn (thy) => map Context.theory_long_name (Context.ancestors_of thy)"
+    "fn (thy) => map Context.theory_name (Context.ancestors_of thy)"
   )
   val toplevel_string_of_state: MLFunction[ToplevelState, String] = compileFunction[ToplevelState, String](
     "Toplevel.string_of_state")
@@ -116,9 +116,69 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
   val make_pretty_list_string_list: MLFunction[List[Pretty.T], List[String]] = compileFunction[List[Pretty.T], List[String]](
     "fn (pretty_list) => map Pretty.unformatted_string_of pretty_list"
   )
+
+  val local_facts_and_defs: MLFunction[ToplevelState, List[(String, String)]] =
+    compileFunction[ToplevelState, List[(String, String)]](
+    """fn tls =>
+      |  let val ctxt = Toplevel.context_of tls;
+      |      val facts = Proof_Context.facts_of ctxt;
+      |      val props = map #1 (Facts.props facts);
+      |      val local_facts =
+      |        (if null props then [] else [("unnamed", props)]) @
+      |        Facts.dest_static true [Global_Theory.facts_of (Proof_Context.theory_of ctxt)] facts;
+      |      val thms = (
+      |           if null local_facts then []
+      |           else
+      |           (map (fn e => #2 (#2 e)) (sort_by (#1 o #2) (map (`(Proof_Context.pretty_fact ctxt)) local_facts))));
+      |      val condensed_thms = fold (fn x => fn y => (x @ y)) thms [];
+      |  in 
+      |      map (fn thm => (
+      |            Thm.get_name_hint thm,
+      |            Pretty.unformatted_string_of
+      |          (Element.pretty_statement ctxt "" thm)
+      |         ))
+      |         condensed_thms
+      |  end""".stripMargin
+  )
+  val global_facts_and_defs: MLFunction[ToplevelState, List[(String, String)]] =
+    compileFunction[ToplevelState, List[(String, String)]](
+      """fn tls =>
+        | map (fn tup => (#1 tup, Pretty.unformatted_string_of (Element.pretty_statement (Toplevel.context_of tls) "test" (#2 tup))))
+        | (Global_Theory.all_thms_of (Proof_Context.theory_of (Toplevel.context_of tls)) false)
+        """.stripMargin
+    )
+  def local_facts_and_defs_string(tls: ToplevelState): String =
+    local_facts_and_defs(tls).force.retrieveNow.distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
+  def local_facts_and_defs_string(tls_name: String): String = {
+    val tls = retrieve_tls(tls_name)
+    try {
+        local_facts_and_defs_string(tls)
+    } catch {
+        case e: Throwable => e.toString
+    }
+  }
+  def global_facts_and_defs_string(tls: ToplevelState): String =
+    global_facts_and_defs(tls).force.retrieveNow.distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
+  def global_facts_and_defs_string(tls_name: String): String = {
+    val tls = retrieve_tls(tls_name)
+    try {
+        global_facts_and_defs_string(tls)
+    } catch {
+        case e: Throwable => e.toString
+    }
+  }
+  def total_facts_and_defs_string(tls: ToplevelState): String = {
+    val local_facts = local_facts_and_defs(tls).force.retrieveNow
+    val global_facts = global_facts_and_defs(tls).force.retrieveNow
+    (local_facts ++ global_facts).distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
+  }
+  def total_facts_and_defs_string(tls_name: String): String = {
+    val tls = retrieve_tls(tls_name)
+    total_facts_and_defs_string(tls)
+  }
+
   val header_read: MLFunction2[String, Position, TheoryHeader] =
     compileFunction[String, Position, TheoryHeader]("fn (text,pos) => Thy_Header.read pos text")
-
   // setting up Sledgehammer
   val thy_for_sledgehammer: Theory = Theory("HOL.List")
   val Sledgehammer_Commands: String = thy_for_sledgehammer.importMLStructureNow("Sledgehammer_Commands")
@@ -141,100 +201,6 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
        |      run_sledgehammer p_state |> fst
        |    end)
     """.stripMargin)
-
-
-  val local_facts_and_defs: MLFunction[ToplevelState, List[(String, String)]] =
-    compileFunction[ToplevelState, List[(String, String)]](
-      """fn tls =>
-        |  let val ctxt = Toplevel.context_of tls;
-        |      val facts = Proof_Context.facts_of ctxt;
-        |      val props = map #1 (Facts.props facts);
-        |      val local_facts =
-        |        (if null props then [] else [("unnamed", props)]) @
-        |        Facts.dest_static true [Global_Theory.facts_of (Proof_Context.theory_of ctxt)] facts;
-        |      val thms = (
-        |           if null local_facts then []
-        |           else
-        |           (map (fn e => #2 (#2 e)) (sort_by (#1 o #2) (map (`(Proof_Context.pretty_fact ctxt)) local_facts))));
-        |      val condensed_thms = fold (fn x => fn y => (x @ y)) thms [];
-        |  in
-        |      map (fn thm => (
-        |            Thm.get_name_hint thm,
-        |            Pretty.unformatted_string_of
-        |          (Element.pretty_statement ctxt "" thm)
-        |         ))
-        |         condensed_thms
-        |  end""".stripMargin
-    )
-  val global_facts_and_defs: MLFunction[ToplevelState, List[(String, String)]] =
-    compileFunction[ToplevelState, List[(String, String)]](
-      """fn tls =>
-        | map (fn tup => (#1 tup, Pretty.unformatted_string_of (Element.pretty_statement (Toplevel.context_of tls) "test" (#2 tup))))
-        | (Global_Theory.all_thms_of (Proof_Context.theory_of (Toplevel.context_of tls)) false)
-        """.stripMargin
-    )
-  def local_facts_and_defs_string(tls: ToplevelState): String =
-    local_facts_and_defs(tls).force.retrieveNow.distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
-  def local_facts_and_defs_string(tls_name: String): String = {
-    val tls = retrieve_tls(tls_name)
-    try {
-      local_facts_and_defs_string(tls)
-    } catch {
-      case e: Throwable => e.toString
-    }
-  }
-  def global_facts_and_defs_string(tls: ToplevelState): String =
-    global_facts_and_defs(tls).force.retrieveNow.distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
-  def global_facts_and_defs_string(tls_name: String): String = {
-    val tls = retrieve_tls(tls_name)
-    try {
-      global_facts_and_defs_string(tls)
-    } catch {
-      case e: Throwable => e.toString
-    }
-  }
-
-
-//  def total_facts(tls: ToplevelState): String = {
-//    try {
-//       val local_facts = local_facts_retriever(tls).force.retrieveNow
-////      val local_facts = local_facts_and_defs(tls).force.retrieveNow
-////        val global_facts = global_facts_and_defs(tls).force.retrieveNow
-//    }
-//
-//    catch {
-//      case ex : Exception => {
-//        println ("\n" + ex)
-//        println ("\n" + ex.getStackTrace + "\n")
-//      }
-//    }
-
-
-//    val local_facts = local_facts_and_defs(toplevel).force.retrieveNow
-//    val global_facts = global_facts_and_defs(toplevel).force.retrieveNow
-
-
-//    catch {
-//      case ex: Exception => {
-//        println("\n" + ex)
-//        println("\n" + ex.getStackTrace + "\n")
-//      }
-//    }
-
-//    (local_facts ++ global_facts).distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
-//  }
-
-  def all_local_facts(tls: ToplevelState): String = {
-    println("toplevel:")
-    print(getStateString)
-    val local_facts = local_facts_and_defs(tls).force.retrieveNow
-    local_facts.distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
-  }
-
-  def all_global_facts(tls: ToplevelState): String = {
-    val global_facts = global_facts_and_defs(tls).force.retrieveNow
-    global_facts.distinct.map(x => x._1 + "<DEF>" + x._2).mkString("<SEP>")
-  }
 
   // prove_with_Sledgehammer is mostly identical to check_with_Sledgehammer except for that when the returned Boolean is true, it will 
   // also return a non-empty list of Strings, each of which contains executable commands to close the top subgoal. We might need to chop part of 
@@ -322,10 +288,10 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
   var available_imports: Set[String] = available_imports_buffer.toSet
   val theoryNames: List[String] = starter_string.split("imports")(1).split("begin")(0).split(" ").map(_.trim).filter(_.nonEmpty).toList
   var importMap: Map[String, String] = Map()
-  for (theoryName <- theoryNames) {
-    val sanitisedName = sanitiseInDirectoryName(theoryName)
+  for (theory_name <- theoryNames) {
+    val sanitisedName = sanitiseInDirectoryName(theory_name)
     if (available_imports(sanitisedName)) {
-      importMap += (theoryName.replace("\"", "") -> sanitisedName)
+      importMap += (theory_name.replace("\"", "") -> sanitisedName)
     }
   }
 
@@ -422,7 +388,7 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
     stateActionTotal
   }
 
-    def parseActionRaw(isarString : String) : String = {
+  def parseActionRaw(isarString : String) : String = {
     // Here we directly apply transitions to the theory repeatedly
     // to get the (last_observation, action, observation, reward, done) tuple
     var actionTotal : String = ""
@@ -438,6 +404,7 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
     }
     actionTotal
   }
+
 
   def parseStateActionWithHammer(isarString: String): String = {
     var stateActionHammerTotal: String = ""
@@ -500,7 +467,6 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
 
   def parse_with_hammer: String = parseStateActionWithHammer(fileContent)
 
-
   def step(isar_string: String, top_level_state: ToplevelState, timeout_in_millis: Int = 2000): ToplevelState = {
     // Normal isabelle business
     var tls_to_return: ToplevelState = null
@@ -525,6 +491,7 @@ class PisaOS(var path_to_isa_bin: String, var path_to_file: String, var working_
     if (isar_string == "PISA extract data")
       return parse
 
+    // added 6_06 for dataset generation
     if (isar_string == "PISA extract actions")
       return parse_raw
 

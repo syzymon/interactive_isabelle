@@ -1,6 +1,0 @@
-README.md
-setup.py
-pisapy.egg-info/PKG-INFO
-pisapy.egg-info/SOURCES.txt
-pisapy.egg-info/dependency_links.txt
-pisapy.egg-info/top_level.txt

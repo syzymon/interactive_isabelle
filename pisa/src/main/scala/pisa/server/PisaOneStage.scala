@@ -62,7 +62,6 @@ class OneStageBody extends ZServer[ZEnv, Any] {
 
   def deal_with_extraction(): String = pisaos.step("PISA extract data")
 
-
   def deal_with_extraction_with_hammer(): String = pisaos.step("PISA extract data with hammer")
 
   def deal_with_list_states(): String = pisaos.top_level_state_map.keys.mkString(" | ")
@@ -137,39 +136,22 @@ class OneStageBody extends ZServer[ZEnv, Any] {
 
   def deal_with_proceed_after(true_command: String): String = pisaos.step_to_transition_text(true_command, after = true)
 
-  def deal_with_local_facts(toplevel_state_name: String): String = {
-    println(toplevel_state_name)
-    if (pisaos.top_level_state_map.contains(toplevel_state_name)) {
-      val tls: ToplevelState = pisaos.retrieve_tls(toplevel_state_name)
-//      println(tls)
-//      println(pisaos.top_level_state_map)
-      s"${pisaos.local_facts_and_defs_string(tls)}"
-    } else s"Didn't find top level state of given name: ${toplevel_state_name}"
-  }
-
-    def deal_with_global_facts(toplevel_state_name: String): String = {
-    if (pisaos.top_level_state_map.contains(toplevel_state_name)) {
-      val tls: ToplevelState = pisaos.retrieve_tls(toplevel_state_name)
-//      println(tls)
-//      println(pisaos.top_level_state_map)
-      s"${pisaos.global_facts_and_defs_string(tls)}"
-    } else s"Didn't find top level state of given name: ${toplevel_state_name}"
-  }
-
   def deal_with_exit(command: String): String = {
     pisaos.step(command)
     pisaos = null
     "Exited"
   }
 
-    def deal_with_raw_extraction(command: String): String = {
-    pisaos.step("PISA extract actions")
-  }
-
   def deal_with_clone(old_name: String, new_name: String): String = {
     pisaos.clone_tls(old_name, new_name)
     "Successfully copied top level state named: " + new_name
   }
+
+  def deal_with_raw_extraction(command: String): String = {
+    pisaos.step("PISA extract actions")
+  }
+
+
 
   def deal_with_delete(toplevel_state_name: String): String = {
     if (pisaos.top_level_state_map.contains(toplevel_state_name)) {
@@ -178,11 +160,46 @@ class OneStageBody extends ZServer[ZEnv, Any] {
     } else s"Didn't find top level state of given name: ${toplevel_state_name}"
   }
 
+  def deal_with_local_facts_and_defs(toplevel_state_name: String): String = {
+    if (pisaos.top_level_state_map.contains(toplevel_state_name)) {
+      pisaos.local_facts_and_defs_string(toplevel_state_name)
+    } else s"Didn't find top level state of given name: ${toplevel_state_name}"
+  }
+
+  def deal_with_global_facts_and_defs(toplevel_state_name: String): String = {
+    if (pisaos.top_level_state_map.contains(toplevel_state_name)) {
+      pisaos.global_facts_and_defs_string(toplevel_state_name)
+    } else s"Didn't find top level state of given name: ${toplevel_state_name}"
+  }
+
+  def deal_with_total_facts_and_defs(toplevel_state_name: String): String = {
+    if (pisaos.top_level_state_map.contains(toplevel_state_name)) {
+      pisaos.total_facts_and_defs_string(toplevel_state_name)
+    } else s"Didn't find top level state of given name: ${toplevel_state_name}"
+  }
+
   def isabelleCommand(isa_command: IsaCommand): ZIO[
     zio.ZEnv, Status, IsaState] = {
     var proof_state: String = {
       if (isa_command.command.trim == "PISA extract data") deal_with_extraction()
       else if (isa_command.command.trim == "PISA extract data with hammer") deal_with_extraction_with_hammer()
+      else if (isa_command.command.startsWith("<local facts and defs>")) {
+        val tls_name: String = isa_command.command.stripPrefix("<local facts and defs>").trim
+        deal_with_local_facts_and_defs(tls_name)
+      }
+      else if (isa_command.command.startsWith("<global facts and defs>")) {
+        val tls_name: String = isa_command.command.stripPrefix("<global facts and defs>").trim
+        deal_with_global_facts_and_defs(tls_name)
+      }
+      else if (isa_command.command.startsWith("<total facts and defs>")) {
+        val tls_name: String = isa_command.command.stripPrefix("<total facts and defs>").trim
+        deal_with_total_facts_and_defs(tls_name)
+      }
+      else if (isa_command.command.trim.startsWith("<clone>")) {
+        val old_name: String = isa_command.command.trim.split("<clone>")(1).trim
+        val new_name: String = isa_command.command.trim.split("<clone>")(2).trim
+        deal_with_clone(old_name, new_name)
+      }
       else if (isa_command.command.startsWith("<list states>")) deal_with_list_states()
       else if (isa_command.command.startsWith("<initialise>")) deal_with_initialise()
       else if (isa_command.command.startsWith("<get state>")) {
@@ -210,20 +227,13 @@ class OneStageBody extends ZServer[ZEnv, Any] {
         val tls_name: String = isa_command.command.stripPrefix("<get_proof_level>").trim
         deal_with_proof_level(tls_name)
       }
-      else if (isa_command.command.startsWith("<local_facts>")) {
-      val tls_name: String = isa_command.command.stripPrefix("<local_facts>").trim
-        deal_with_local_facts(tls_name)
-      }
-      else if (isa_command.command.startsWith("<global_facts>")) {
-      val tls_name: String = isa_command.command.stripPrefix("<global_facts>").trim
-        deal_with_global_facts(tls_name)
-      }
-       else if (isa_command.command.startsWith("<extract_steps>")) {
-        deal_with_raw_extraction("root")
-      }
       else if (isa_command.command.startsWith("<proceed before>")) {
         val true_command: String = isa_command.command.stripPrefix("<proceed before>").trim
         deal_with_proceed_before(true_command)
+      }
+
+      else if (isa_command.command.startsWith("<extract_steps>")) {
+        deal_with_raw_extraction("root")
       }
       else if (isa_command.command.startsWith("<proceed after>")) {
         val true_command: String = isa_command.command.stripPrefix("<proceed after>").trim
