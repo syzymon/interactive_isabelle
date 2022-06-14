@@ -69,7 +69,9 @@ class IsaFlexEnv:
         return 1. if done else 0.
 
     def reset(self):
+        print(self.port)
         self.stub = self.create_stub(port=self.port)
+        print("Hooray")
         try:
             print(self.stub.InitialiseIsabelle(server_pb2.IsaPath(path=self.isa_path)))
             print(self.stub.IsabelleWorkingDirectory(server_pb2.IsaPath(path=self.working_directory)))
@@ -85,6 +87,11 @@ class IsaFlexEnv:
             server_pb2.IsaCommand(command=f"<get_proof_level> {tls_name}")
         ).state
         return int(proof_level)
+    
+    def dependent_theorems(self, theorem_name):
+        print(theorem_name)
+        theorems = self.stub.IsabelleCommand(server_pb2.IsaCommand(command=f"<get_thm_deps> {theorem_name}")).state
+        return theorems.split("<SEP>")
 
     @func_set_timeout(20)
     def step_to_top_level_state(self, action, tls_name, new_name):
@@ -227,6 +234,7 @@ def parsed_json_to_env_and_dict(path_to_json, afp_path, port=9000, isa_path="/Ap
 
 @func_set_timeout(300, allowOverride=True)
 def initialise_env(port, isa_path, theory_file_path=None, working_directory=None, working_dir_mode="standard"):
+    print(isa_path)
     print(f"theory_file_path = {theory_file_path}")
     if working_directory is None:
         if working_dir_mode == "standard":

@@ -178,10 +178,22 @@ class OneStageBody extends ZServer[ZEnv, Any] {
     } else s"Didn't find top level state of given name: ${toplevel_state_name}"
   }
 
+  def deal_with_thm_deps(tls_name: String, thm_name: String): String = {
+    if (pisaos.top_level_state_map.contains(tls_name)) {
+      val dep_thm_list = pisaos.get_dependent_theorems(tls_name, thm_name)
+      dep_thm_list.mkString("<SEP>")
+    } else s"Didn't find top level state of given name: ${tls_name}"
+  }
+
   def isabelleCommand(isa_command: IsaCommand): ZIO[
     zio.ZEnv, Status, IsaState] = {
     var proof_state: String = {
       if (isa_command.command.trim == "PISA extract data") deal_with_extraction()
+      else if (isa_command.command.trim.startsWith("<get_thm_deps>")) {
+        val tls_name: String = "default"
+        val thm_name: String = isa_command.command.trim.stripPrefix("<get_thm_deps>").trim
+        deal_with_thm_deps(tls_name, thm_name)
+      }
       else if (isa_command.command.trim == "PISA extract data with hammer") deal_with_extraction_with_hammer()
       else if (isa_command.command.startsWith("<local facts and defs>")) {
         val tls_name: String = isa_command.command.stripPrefix("<local facts and defs>").trim
