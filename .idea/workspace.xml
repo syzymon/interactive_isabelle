@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6bc60102-117d-42b8-a366-983d7605741e" name="Changes" comment="Fix PisaOneStage.scala &quot;e&quot;">
-      <change beforePath="$PROJECT_DIR$/pisa/src/main/scala/pisa/server/PisaOneStage.scala" beforeDir="false" afterPath="$PROJECT_DIR$/pisa/src/main/scala/pisa/server/PisaOneStage.scala" afterDir="false" />
+    <list default="true" id="6bc60102-117d-42b8-a366-983d7605741e" name="Changes" comment="Add xml files">
+      <change beforePath="$PROJECT_DIR$/pisa/src/main/scala/pisa/server/PisaOS.scala" beforeDir="false" afterPath="$PROJECT_DIR$/pisa/src/main/scala/pisa/server/PisaOS.scala" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +55,7 @@
       <option name="presentableId" value="Default" />
       <updated>1655908877354</updated>
       <workItem from="1655908878633" duration="1366000" />
-      <workItem from="1655910287662" duration="805000" />
+      <workItem from="1655910287662" duration="1482000" />
     </task>
     <task id="LOCAL-00001" summary="Add setup files">
       <created>1655909003480</created>
@@ -78,7 +78,21 @@
       <option name="project" value="LOCAL" />
       <updated>1655910521308</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Fix PisaOneStage.scala">
+      <created>1655911109963</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1655911109963</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Add xml files">
+      <created>1655911143191</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1655911143191</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -102,6 +116,8 @@
     </ignored-roots>
     <MESSAGE value="Add setup files" />
     <MESSAGE value="Fix PisaOneStage.scala &quot;e&quot;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix PisaOneStage.scala &quot;e&quot;" />
+    <MESSAGE value="Fix PisaOneStage.scala" />
+    <MESSAGE value="Add xml files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add xml files" />
   </component>
 </project>
