@@ -14,9 +14,11 @@ import de.unruh.isabelle.control.IsabelleException
 import de.unruh.isabelle.mlvalue.MLValue
 import de.unruh.isabelle.control.Isabelle
 import de.unruh.isabelle.pure.Implicits._
+import de.unruh.isabelle.mlvalue.Implicits._
 
 import scala.concurrent.{ExecutionContext, TimeoutException}
 import java.io.PrintWriter
+import scala.util.control.Breaks
 
 class OneStageBody extends ZServer[ZEnv, Any] {
   var pisaos: PisaOS = null
@@ -178,6 +180,22 @@ class OneStageBody extends ZServer[ZEnv, Any] {
     } else s"Didn't find top level state of given name: ${toplevel_state_name}"
   }
 
+  def deal_with_global_facts_from_file: String = {
+    implicit val isabelle: Isabelle = pisaos.isabelle
+    implicit val ec: ExecutionContext = pisaos.ec
+    val continue = new Breaks
+    for ((transition, text) <- pisaos.parse_text(pisaos.thy1, pisaos.fileContentCopy).force.retrieveNow) {
+      continue.breakable {
+        if (text.trim.isEmpty) continue.break
+        else if (text.trim=="end") continue.break
+        else {
+          pisaos.singleTransition(transition)
+        }
+      }
+    }
+    pisaos.global_facts_and_defs_string(pisaos.toplevel)
+  }
+
   def deal_with_thm_deps(tls_name: String, thm_name: String): String = {
     if (pisaos.top_level_state_map.contains(tls_name)) {
       val dep_thm_list = pisaos.get_dependent_theorems(tls_name, thm_name)
@@ -235,6 +253,9 @@ class OneStageBody extends ZServer[ZEnv, Any] {
         }
 
       }
+      else if (isa_command.command.startsWith("<get global facts from file>")) {
+          deal_with_global_facts_from_file
+        }
       else if (isa_command.command.startsWith("<get_proof_level>")) {
         val tls_name: String = isa_command.command.stripPrefix("<get_proof_level>").trim
         deal_with_proof_level(tls_name)
