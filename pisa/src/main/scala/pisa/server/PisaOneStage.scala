@@ -250,7 +250,7 @@ class OneStageBody extends ZServer[ZEnv, Any] {
           case _: Throwable => "Unknown error"
         }
 
-      }d
+      }
       else if (isa_command.command.startsWith("<get global facts from file>")) {
           deal_with_global_facts_from_file
         }
