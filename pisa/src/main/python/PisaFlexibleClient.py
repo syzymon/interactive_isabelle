@@ -5,7 +5,7 @@ import json
 import grpc
 import sys
 
-sys.path.append('/home/tomek/interactive_isabelle/pisa/src/main/python')
+sys.path.append('/home/szymon/PycharmProjects/interactive_isabelle/pisa/src/main/python')
 
 
 
@@ -89,7 +89,7 @@ class IsaFlexEnv:
         return int(proof_level)
     
     def dependent_theorems(self, theorem_name):
-        print(theorem_name)
+        # print(theorem_name)
         theorems = self.stub.IsabelleCommand(server_pb2.IsaCommand(command=f"<get_thm_deps> {theorem_name}")).state
         return theorems.split("<SEP>")
 
@@ -107,7 +107,7 @@ class IsaFlexEnv:
         # done = True if ("subgoal" in last_obs_string and "subgoal" not in obs_string) else False
         return obs_string, self.reward(done), done, {}
 
-    @func_set_timeout(20)
+    @func_set_timeout(60)
     def post(self, action):
         return self.stub.IsabelleCommand(server_pb2.IsaCommand(command=action)).state
         # last_obs_string = self.obs_string
