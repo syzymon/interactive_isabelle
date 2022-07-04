@@ -5,17 +5,15 @@ import json
 import grpc
 import sys
 
-sys.path.append('/home/szymon/PycharmProjects/interactive_isabelle/pisa/src/main/python')
-
-
-
+# sys.path.append('/home/szymon/PycharmProjects/interactive_isabelle/pisa/src/main/python')
 from copy import copy
 from func_timeout import func_set_timeout
 
-# from pisa.src.main.python import server_pb2, server_pb2_grpc
+from pisa.src.main.python import server_pb2, server_pb2_grpc
+from pathlib import Path
 
-import server_pb2
-import server_pb2_grpc
+# import server_pb2
+# import server_pb2_grpc
 
 
 
@@ -233,35 +231,30 @@ def parsed_json_to_env_and_dict(path_to_json, afp_path, port=9000, isa_path="/Ap
 #     return IsaFlexEnv(port=port, isa_path=isa_path, starter_string=theory_file_path, working_directory=working_directory)
 
 @func_set_timeout(300, allowOverride=True)
-def initialise_env(port, isa_path, theory_file_path=None, working_directory=None, working_dir_mode="standard"):
-    print(isa_path)
+def initialise_env(port, isa_path, theory_file_path=None, working_directory=None):
     print(f"theory_file_path = {theory_file_path}")
     if working_directory is None:
-        if working_dir_mode == "standard":
-            theory_path_split = theory_file_path.split("/")
-            if "thys" in theory_path_split:
-                index = theory_path_split.index("thys")
-                working_directory = "/".join(theory_path_split[: index + 2])
-            elif "HOL" in theory_path_split:
-                index = theory_path_split.index("HOL")
-                if len(theory_path_split) < index + 2:
-                    working_directory = "/".join(theory_path_split[: index + 1])
-                else:
-                    working_directory = "/".join(theory_path_split[: index + 2])
-        elif working_dir_mode == "full":
-            theory_path_split = theory_file_path.split("/")
-            working_directory = "/".join(theory_path_split[: -1])
-
+        actual_working_dir_candidate = str(Path(theory_file_path).parents[0])
+        i = 0
+        success = False
+        while not success and i < 5:
+            try:
+                env = IsaFlexEnv(
+                    port=port,
+                    isa_path=isa_path,
+                    starter_string=theory_file_path,
+                    working_directory=actual_working_dir_candidate,
+                )
+                success = True
+            except:
+                actual_working_dir_candidate = str(Path(actual_working_dir_candidate).parents[0])
+                i += 1
+        if success:
+            print(f"Automatically detected working directory: {actual_working_dir_candidate}")
         else:
-            assert ValueError(f"uknkown working_dir_mode = {working_dir_mode}")
-
-        print(f"Automatically detected working directory: {working_directory}")
-    return IsaFlexEnv(
-        port=port,
-        isa_path=isa_path,
-        starter_string=theory_file_path,
-        working_directory=working_directory,
-    )
+            print(f"Did not manage to detect working directory: {actual_working_dir_candidate}")
+            raise ConnectionAbortedError
+    return env
 
 def initialise_problem(env, problem_name):
     env.proceed_to_line(problem_name, "after")

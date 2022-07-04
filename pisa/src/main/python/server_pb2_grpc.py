@@ -2,8 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import server_pb2 as server__pb2
-
+from pisa.src.main.python import server_pb2 as server__pb2
 
 class ServerStub(object):
     """Missing associated documentation comment in .proto file."""
