@@ -12,10 +12,10 @@ sys.path.append('/home/szymon/PycharmProjects/interactive_isabelle/pisa/src/main
 from copy import copy
 from func_timeout import func_set_timeout
 
-# from pisa.src.main.python import server_pb2, server_pb2_grpc
+from pisa.src.main.python import server_pb2, server_pb2_grpc
 
-import server_pb2
-import server_pb2_grpc
+# import server_pb2
+# import server_pb2_grpc
 
 
 
@@ -87,7 +87,7 @@ class IsaFlexEnv:
             server_pb2.IsaCommand(command=f"<get_proof_level> {tls_name}")
         ).state
         return int(proof_level)
-    
+
     def dependent_theorems(self, theorem_name):
         # print(theorem_name)
         theorems = self.stub.IsabelleCommand(server_pb2.IsaCommand(command=f"<get_thm_deps> {theorem_name}")).state
@@ -270,9 +270,9 @@ def initialise_problem(env, problem_name):
 
 
 if __name__ == '__main__':
-    env = initialise_env(8000, 
+    env = initialise_env(8000,
         working_directory="/Applications/Isabelle2021.app/src/HOL/Examples",
-        isa_path="/Applications/Isabelle2021.app", 
+        isa_path="/Applications/Isabelle2021.app",
         theory_file_path="/Applications/Isabelle2021.app/src/HOL/Examples/Adhoc_Overloading_Examples.thy"
     )
     print(env.post("<get_ancestors>"))
