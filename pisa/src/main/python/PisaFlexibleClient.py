@@ -105,7 +105,7 @@ class IsaFlexEnv:
         # done = True if ("subgoal" in last_obs_string and "subgoal" not in obs_string) else False
         return obs_string, self.reward(done), done, {}
 
-    @func_set_timeout(60)
+    @func_set_timeout(200)
     def post(self, action):
         return self.stub.IsabelleCommand(server_pb2.IsaCommand(command=action)).state
         # last_obs_string = self.obs_string
