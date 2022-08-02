@@ -15,7 +15,14 @@ from pathlib import Path
 # import server_pb2
 # import server_pb2_grpc
 
-
+def     EmptyInitialStateException(Exception):
+    pass
+def    EnvInitFailedException(Exception):
+    pass
+def    ProceedToLineFailedException(Exception):
+    pass
+def StepToTopLevelStateException(Exception):
+    pass
 
 MAX_MESSAGE_LENGTH = 10485760
 
@@ -186,6 +193,16 @@ class IsaFlexEnv:
         #         command=f"<global_facts> {tls_name}"
         #     )
         # ).state
+    def all_facts_processed(self):
+        _global = self.global_facts()
+        _local = self.local_facts()
+
+        processed_global = process_raw_global_facts(_global)
+        processed_local = process_raw_global_facts(_local)
+        processed_global.update(processed_local)
+
+        return processed_global
+
 
     def find_thm(self, tls_name, thm_name):
         return self.stub.IsabelleCommand(
