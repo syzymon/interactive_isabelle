@@ -15,14 +15,37 @@ from pathlib import Path
 # import server_pb2
 # import server_pb2_grpc
 
-def     EmptyInitialStateException(Exception):
+
+class EmptyInitialStateException(Exception):
     pass
-def    EnvInitFailedException(Exception):
+
+class EnvInitFailedException(Exception):
     pass
-def    ProceedToLineFailedException(Exception):
+
+class ProceedToLineFailedException(Exception):
     pass
-def StepToTopLevelStateException(Exception):
+
+class StepToTopLevelStateException(Exception):
     pass
+
+class AvailableFactsExtractionError(Exception):
+    pass
+
+class _InactiveRpcError(Exception):
+    pass
+
+def process_raw_global_facts(raw_string):
+    #TODO: handle multiple facts with same name
+    if raw_string == '':
+        return {}
+    if raw_string == 'de.unruh.isabelle.control.IsabelleException: exception UNDEF raised (line 183 of "Isar/toplevel.ML")':
+        raise AvailableFactsExtractionError
+    list_of_string_tuples = raw_string.split("<SEP>")
+    global_fact_dict = {}
+    for element in list_of_string_tuples:
+        name, definition = element.split("<DEF>")
+        global_fact_dict[name] = definition
+    return global_fact_dict
 
 MAX_MESSAGE_LENGTH = 10485760
 
@@ -34,11 +57,14 @@ MAX_MESSAGE_LENGTH = 10485760
 #     return server_pb2_grpc.ServerStub(channel)
 
 
-
 class IsaFlexEnv:
-    def __init__(self, port=9000, isa_path="/Applications/Isabelle2020.app/Isabelle",
-                 starter_string="theory Test imports Complex_Main begin",
-                 working_directory="/Users/qj213/Projects/afp-2021-02-11/thys/Functional-Automata"):
+    def __init__(
+        self,
+        port,
+        isa_path,
+        starter_string,
+        working_directory,
+    ):
         self.port = port
         self.isa_path = isa_path
         self.starter_string = starter_string
@@ -50,20 +76,32 @@ class IsaFlexEnv:
 
     def create_stub(self, port):
         MAX_MESSAGE_LENGTH = 1048576000
-        self.channel = grpc.insecure_channel('localhost:{}'.format(port),
-                                             options=[('grpc.max_send_message_length', MAX_MESSAGE_LENGTH),
-                                                      ('grpc.max_receive_message_length', MAX_MESSAGE_LENGTH)])
+        self.channel = grpc.insecure_channel(
+            "localhost:{}".format(port),
+            options=[
+                ("grpc.max_send_message_length", MAX_MESSAGE_LENGTH),
+                ("grpc.max_receive_message_length", MAX_MESSAGE_LENGTH),
+            ],
+        )
         return server_pb2_grpc.ServerStub(self.channel)
 
     def observation(self):
         return self.obs_string
 
-    def initialise_env(self,port, isa_path, theory_file_path=None, working_directory=None):
-        return IsaFlexEnv(port=port, isa_path=isa_path, starter_string=theory_file_path,
-                          working_directory=working_directory)
+    def initialise_env(
+        self, port, isa_path, theory_file_path=None, working_directory=None
+    ):
+        return IsaFlexEnv(
+            port=port,
+            isa_path=isa_path,
+            starter_string=theory_file_path,
+            working_directory=working_directory,
+        )
 
     def is_finished(self, name_of_tls):
-        returned_string = self.stub.IsabelleCommand(server_pb2.IsaCommand(command=f"<is finished> {name_of_tls}")).state.strip()
+        returned_string = self.stub.IsabelleCommand(
+            server_pb2.IsaCommand(command=f"<is finished> {name_of_tls}")
+        ).state.strip()
         if returned_string.startswith("t"):
             return True
         else:
@@ -71,7 +109,7 @@ class IsaFlexEnv:
 
     @staticmethod
     def reward(done):
-        return 1. if done else 0.
+        return 1.0 if done else 0.0
 
     def reset(self):
         print(self.port)
@@ -79,11 +117,21 @@ class IsaFlexEnv:
         print("Hooray")
         try:
             print(self.stub.InitialiseIsabelle(server_pb2.IsaPath(path=self.isa_path)))
-            print(self.stub.IsabelleWorkingDirectory(server_pb2.IsaPath(path=self.working_directory)))
-            print(self.stub.IsabelleContext(server_pb2.IsaContext(context=self.starter_string)))
+            print(
+                self.stub.IsabelleWorkingDirectory(
+                    server_pb2.IsaPath(path=self.working_directory)
+                )
+            )
+            print(
+                self.stub.IsabelleContext(
+                    server_pb2.IsaContext(context=self.starter_string)
+                )
+            )
         except Exception as e:
-            print("Failure at initialising Isabelle process. "
-                  "Make sure the path your provide is where the Isabelle executable is.")
+            print(
+                "Failure at initialising Isabelle process. "
+                "Make sure the path your provide is where the Isabelle executable is."
+            )
             print(e)
         return self.obs_string
 
@@ -92,10 +140,12 @@ class IsaFlexEnv:
             server_pb2.IsaCommand(command=f"<get_proof_level> {tls_name}")
         ).state
         return int(proof_level)
-    
+
     def dependent_theorems(self, theorem_name):
         # print(theorem_name)
-        theorems = self.stub.IsabelleCommand(server_pb2.IsaCommand(command=f"<get_thm_deps> {theorem_name}")).state
+        theorems = self.stub.IsabelleCommand(
+            server_pb2.IsaCommand(command=f"<get_thm_deps> {theorem_name}")
+        ).state
         return theorems.split("<SEP>")
 
     @func_set_timeout(20)
@@ -103,7 +153,10 @@ class IsaFlexEnv:
         # last_obs_string = self.stub.IsabelleCommand(server_pb2.IsaCommand(command=f"<get state> {tls_name}")).state
         try:
             obs_string = self.stub.IsabelleCommand(
-                server_pb2.IsaCommand(command=f"<apply to top level state> {tls_name} <apply to top level state> {action} <apply to top level state> {new_name}")).state
+                server_pb2.IsaCommand(
+                    command=f"<apply to top level state> {tls_name} <apply to top level state> {action} <apply to top level state> {new_name}"
+                )
+            ).state
         except Exception as e:
             print("***Something went wrong***")
             print(e)
@@ -174,7 +227,7 @@ class IsaFlexEnv:
         print(message)
         print(f"Cloned state called {tls_name}")
 
-############################ THIS IS NEW, ADAPTED FROM ALBERT ##################################
+    ############################ THIS IS NEW, ADAPTED FROM ALBERT ##################################
     def local_facts(self, tls_name="default"):
         try:
             return self.post(f"<local facts and defs> {tls_name}")
@@ -193,6 +246,7 @@ class IsaFlexEnv:
         #         command=f"<global_facts> {tls_name}"
         #     )
         # ).state
+
     def all_facts_processed(self):
         _global = self.global_facts()
         _local = self.local_facts()
@@ -202,7 +256,6 @@ class IsaFlexEnv:
         processed_global.update(processed_local)
 
         return processed_global
-
 
     def find_thm(self, tls_name, thm_name):
         return self.stub.IsabelleCommand(
@@ -226,7 +279,13 @@ class IsaFlexEnv:
         except _InactiveRpcError:
             raise ProceedToLineFailedException
 
-def parsed_json_to_env_and_dict(path_to_json, afp_path, port=9000, isa_path="/Applications/Isabelle2020.app/Isabelle"):
+
+def parsed_json_to_env_and_dict(
+    path_to_json,
+    afp_path,
+    port=9000,
+    isa_path="/Applications/Isabelle2020.app/Isabelle",
+):
     save_dict = json.load(open(path_to_json))
     project = save_dict["project"]
     wd = os.path.join(afp_path, "thys", project)
@@ -239,13 +298,20 @@ def parsed_json_to_env_and_dict(path_to_json, afp_path, port=9000, isa_path="/Ap
             break
     assert starter_string
     # print(port, isa_path, starter_string, wd, segments)
-    return IsaFlexEnv(port=port, isa_path=isa_path,
-                     starter_string=starter_string,
-                     working_directory=wd), save_dict
+    return (
+        IsaFlexEnv(
+            port=port,
+            isa_path=isa_path,
+            starter_string=starter_string,
+            working_directory=wd,
+        ),
+        save_dict,
+    )
 
 
 # def initialise_env(port, isa_path, theory_file_path=None, working_directory=None, working_dir_mode="standard"):
 #     return IsaFlexEnv(port=port, isa_path=isa_path, starter_string=theory_file_path, working_directory=working_directory)
+
 
 @func_set_timeout(300, allowOverride=True)
 def initialise_env(port, isa_path, theory_file_path=None, working_directory=None):
@@ -264,25 +330,32 @@ def initialise_env(port, isa_path, theory_file_path=None, working_directory=None
                 )
                 success = True
             except:
-                actual_working_dir_candidate = str(Path(actual_working_dir_candidate).parents[0])
+                actual_working_dir_candidate = str(
+                    Path(actual_working_dir_candidate).parents[0]
+                )
                 i += 1
         if success:
-            print(f"Automatically detected working directory: {actual_working_dir_candidate}")
+            print(
+                f"Automatically detected working directory: {actual_working_dir_candidate}"
+            )
         else:
-            print(f"Did not manage to detect working directory: {actual_working_dir_candidate}")
+            print(
+                f"Did not manage to detect working directory: {actual_working_dir_candidate}"
+            )
             raise ConnectionAbortedError
     return env
+
 
 def initialise_problem(env, problem_name):
     env.proceed_to_line(problem_name, "after")
     return env
 
 
-
-if __name__ == '__main__':
-    env = initialise_env(8000, 
+if __name__ == "__main__":
+    env = initialise_env(
+        8000,
         working_directory="/Applications/Isabelle2021.app/src/HOL/Examples",
-        isa_path="/Applications/Isabelle2021.app", 
-        theory_file_path="/Applications/Isabelle2021.app/src/HOL/Examples/Adhoc_Overloading_Examples.thy"
+        isa_path="/Applications/Isabelle2021.app",
+        theory_file_path="/Applications/Isabelle2021.app/src/HOL/Examples/Adhoc_Overloading_Examples.thy",
     )
     print(env.post("<get_ancestors>"))
