@@ -221,7 +221,7 @@ class IsaFlexEnv:
         processed_global = process_raw_global_facts(_global)
         processed_local = process_raw_global_facts(_local)
         processed_global.update(processed_local)
-        processed_global = dict(filter(lambda key: not key.startswith("??"), processed_global))
+        processed_global = dict(filter(lambda key: not key.startswith("??"), processed_global.items()))
 
         return processed_global
 
