@@ -11,6 +11,7 @@ from func_timeout import func_set_timeout
 
 from pisa.src.main.python import server_pb2, server_pb2_grpc
 from pathlib import Path
+from utils.general_utils import trim_string_optional
 
 # import server_pb2
 # import server_pb2_grpc
@@ -31,8 +32,21 @@ class StepToTopLevelStateException(Exception):
 class AvailableFactsExtractionError(Exception):
     pass
 
+class AvailableFactsTimeout(Exception):
+    pass
+
 class _InactiveRpcError(Exception):
     pass
+
+def premise_name_to_possible_isabelle_formats(premise_name):
+    if any([premise_name.endswith(f"_{i}") for i in range(40)]):  # if the premise is of the form assms_1, which in Isabelle is actually assms(1)
+        name_split = name.split("_")
+        prefix = "_".join(name_split[:-1])
+        suffix = "(" + name_split[-1] + ")"
+        final_name = prefix + suffix
+    else:
+        final_name = premise_name
+    return premise_name
 
 def process_raw_global_facts(raw_string):
     #TODO: handle multiple facts with same name
@@ -44,18 +58,13 @@ def process_raw_global_facts(raw_string):
     global_fact_dict = {}
     for element in list_of_string_tuples:
         name, definition = element.split("<DEF>")
-        global_fact_dict[name] = definition
+        isabelle_possible_names = premise_name_to_possible_isabelle_formats(name)
+        for possible_name in isabelle_possible_names:
+            global_fact_dict[possible_name] = definition
+
     return global_fact_dict
 
 MAX_MESSAGE_LENGTH = 10485760
-
-
-# def create_stub(port=9000):
-#     channel = grpc.insecure_channel('localhost:{}'.format(port),
-#                                     options=[('grpc.max_send_message_length', MAX_MESSAGE_LENGTH),
-#                                              ('grpc.max_receive_message_length', MAX_MESSAGE_LENGTH)])
-#     return server_pb2_grpc.ServerStub(channel)
-
 
 class IsaFlexEnv:
     def __init__(
@@ -240,7 +249,12 @@ class IsaFlexEnv:
         # ).state
 
     def global_facts(self, tls_name="default"):
-        return self.post(f"<global facts and defs> {tls_name}")
+        try:
+            facts = self.post(f"<global facts and defs> {tls_name}")
+            return facts
+        except FunctionTimedOut:
+            raise AvailableFactsTimeout
+
         # return self.stub.IsabelleCommand(
         #     server_pb2.IsaCommand(
         #         command=f"<global_facts> {tls_name}"
@@ -271,6 +285,7 @@ class IsaFlexEnv:
     @func_set_timeout(200, allowOverride=True)
     def proceed_to_line(self, line_string, before_after):
         assert before_after in ["before", "after"]
+        line_string = trim_string_optional(line_string)
         try:
             obs_string = self.stub.IsabelleCommand(
                 server_pb2.IsaCommand(command=f"<proceed {before_after}> {line_string}")
