@@ -43,10 +43,10 @@ def premise_name_to_possible_isabelle_formats(premise_name):
         name_split = name.split("_")
         prefix = "_".join(name_split[:-1])
         suffix = "(" + name_split[-1] + ")"
-        final_name = prefix + suffix
+        possible_names = [prefix + suffix, premise_name]
     else:
-        final_name = premise_name
-    return premise_name
+        possible_names = [premise_name]
+    return possible_names
 
 def process_raw_global_facts(raw_string):
     #TODO: handle multiple facts with same name
