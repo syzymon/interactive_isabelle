@@ -5,16 +5,12 @@ import json
 import grpc
 import sys
 
-# sys.path.append('/home/szymon/PycharmProjects/interactive_isabelle/pisa/src/main/python')
 from copy import copy
 from func_timeout import func_set_timeout
 
 from pisa.src.main.python import server_pb2, server_pb2_grpc
 from pathlib import Path
 from utils.general_utils import trim_string_optional
-
-# import server_pb2
-# import server_pb2_grpc
 
 
 class EmptyInitialStateException(Exception):
@@ -38,8 +34,11 @@ class AvailableFactsTimeout(Exception):
 class _InactiveRpcError(Exception):
     pass
 
+
 def premise_name_to_possible_isabelle_formats(premise_name):
-    if any([premise_name.endswith(f"_{i}") for i in range(40)]):  # if the premise is of the form assms_1, which in Isabelle is actually assms(1)
+    if any(
+        [premise_name.endswith(f"_{i}") for i in range(40)]
+    ):  # if the premise is of the form assms_1, which in Isabelle is actually assms(1)
         name_split = premise_name.split("_")
         prefix = "_".join(name_split[:-1])
         suffix = "(" + name_split[-1] + ")"
@@ -48,11 +47,15 @@ def premise_name_to_possible_isabelle_formats(premise_name):
         possible_names = [premise_name]
     return possible_names
 
+
 def process_raw_global_facts(raw_string):
-    #TODO: handle multiple facts with same name
-    if raw_string == '':
+    # TODO: handle multiple facts with same name
+    if raw_string == "":
         return {}
-    if raw_string == 'de.unruh.isabelle.control.IsabelleException: exception UNDEF raised (line 183 of "Isar/toplevel.ML")':
+    if (
+        raw_string
+        == 'de.unruh.isabelle.control.IsabelleException: exception UNDEF raised (line 183 of "Isar/toplevel.ML")'
+    ):
         raise AvailableFactsExtractionError
     list_of_string_tuples = raw_string.split("<SEP>")
     global_fact_dict = {}
@@ -64,7 +67,9 @@ def process_raw_global_facts(raw_string):
 
     return global_fact_dict
 
+
 MAX_MESSAGE_LENGTH = 10485760
+
 
 class IsaFlexEnv:
     def __init__(
@@ -151,7 +156,6 @@ class IsaFlexEnv:
         return int(proof_level)
 
     def dependent_theorems(self, theorem_name):
-        # print(theorem_name)
         theorems = self.stub.IsabelleCommand(
             server_pb2.IsaCommand(command=f"<get_thm_deps> {theorem_name}")
         ).state
@@ -177,47 +181,7 @@ class IsaFlexEnv:
     @func_set_timeout(200)
     def post(self, action):
         return self.stub.IsabelleCommand(server_pb2.IsaCommand(command=action)).state
-        # last_obs_string = self.obs_string
-        # try:
-        #     self.obs_string = self.stub.IsabelleCommand(server_pb2.IsaCommand(command=action)).state
-        # except Exception as e:
-        #     print("***Something went wrong***")
-        #     print(e)
 
-        # # done = self.is_finished(self.obs_string)
-        # done = self.is_finished("default")
-
-        # return self.obs_string, self.reward(done), done, {}
-
-    # def human_play(self):
-    #     done = False
-    #     while not done:
-    #         print(self.obs_string)
-    #         human_proof_line = input("Your tactic is my command: ")
-    #         if human_proof_line == "exit":
-    #             break
-    #         else:
-    #             obs, _, done, _ = self.step(human_proof_line)
-    #             print(obs)
-    #             print("=" * 50)
-
-    # def clone_top_level_state(self, tls_name):
-    #     try:
-    #         message = self.stub.IsabelleCommand(server_pb2.IsaCommand(command=f"<clone> {tls_name}")).state
-    #         print(message)
-    #         print(f"Cloned state called {tls_name}")
-    #     except Exception as e:
-    #         print("**Clone unsuccessful**")
-    #         print(e)
-
-    # def proceed_to_line(self, line_stirng, before_after):
-    #     assert before_after in ["before", "after"]
-    #     try:
-    #         message = self.stub.IsabelleCommand(server_pb2.IsaCommand(command=f"<proceed {before_after}> {line_stirng}")).state
-    #         print(message)
-    #     except Exception as e:
-    #         print("Failure to proceed before line")
-    #         print(e)
     def extract_theory_steps(self):
         all_steps_str = self.stub.IsabelleCommand(
             server_pb2.IsaCommand(command="<extract_steps>")
@@ -242,11 +206,6 @@ class IsaFlexEnv:
             return self.post(f"<local facts and defs> {tls_name}")
         except:
             return "failed"
-        # return self.stub.IsabelleCommand(
-        #     server_pb2.IsaCommand(
-        #         command=f"<local_facts> {tls_name}"
-        #     )
-        # ).state
 
     def global_facts(self, tls_name="default"):
         try:
@@ -255,12 +214,6 @@ class IsaFlexEnv:
         except FunctionTimedOut:
             raise AvailableFactsTimeout
 
-        # return self.stub.IsabelleCommand(
-        #     server_pb2.IsaCommand(
-        #         command=f"<global_facts> {tls_name}"
-        #     )
-        # ).state
-
     def all_facts_processed(self):
         _global = self.global_facts()
         _local = self.local_facts()
@@ -268,6 +221,7 @@ class IsaFlexEnv:
         processed_global = process_raw_global_facts(_global)
         processed_local = process_raw_global_facts(_local)
         processed_global.update(processed_local)
+        processed_global = dict(filter(lambda key: not key.startswith("??"), processed_global))
 
         return processed_global
 
@@ -322,11 +276,6 @@ def parsed_json_to_env_and_dict(
         ),
         save_dict,
     )
-
-
-# def initialise_env(port, isa_path, theory_file_path=None, working_directory=None, working_dir_mode="standard"):
-#     return IsaFlexEnv(port=port, isa_path=isa_path, starter_string=theory_file_path, working_directory=working_directory)
-
 
 @func_set_timeout(300, allowOverride=True)
 def initialise_env(port, isa_path, theory_file_path=None, working_directory=None):
