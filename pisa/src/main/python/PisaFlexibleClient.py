@@ -40,7 +40,7 @@ class _InactiveRpcError(Exception):
 
 def premise_name_to_possible_isabelle_formats(premise_name):
     if any([premise_name.endswith(f"_{i}") for i in range(40)]):  # if the premise is of the form assms_1, which in Isabelle is actually assms(1)
-        name_split = name.split("_")
+        name_split = premise_name.split("_")
         prefix = "_".join(name_split[:-1])
         suffix = "(" + name_split[-1] + ")"
         possible_names = [prefix + suffix, premise_name]
