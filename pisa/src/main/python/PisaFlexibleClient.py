@@ -6,7 +6,8 @@ import grpc
 import sys
 
 from copy import copy
-from func_timeout import func_set_timeout
+from func_timeout import func_set_timeout, FunctionTimedOut
+
 
 from pisa.src.main.python import server_pb2, server_pb2_grpc
 from pathlib import Path
